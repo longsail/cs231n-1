@@ -18,8 +18,8 @@ def softmax_loss_naive(W, X, y, reg):
   loss = 0.0
   dW = np.zeros_like(W)
 
-  num_classes = W.shape[0]
-  num_train = X.shape[1]
+  C = W.shape[0]
+  N = X.shape[1]
 
   #############################################################################
   # TODO: Compute the softmax loss and its gradient using explicit loops.     #
@@ -27,24 +27,22 @@ def softmax_loss_naive(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  grad_helper = np.zeros([num_classes, num_train])
-  for i in xrange(num_train):
-    scores = W.dot(X[:, i])
-    scores -= np.max(scores)
-    correct_class_score = scores[y[i]]
-    sumexp = np.sum(np.exp(scores))
-    loss += -correct_class_score + np.log(sumexp)
 
-    grad_helper[:,i] = scores / sumexp
-    grad_helper[y[i],i] -= 1
-
-  loss /= num_train
+  scores = np.dot(W,X)
+  scores -= np.max(scores)
+  correct_class_scores = scores[y,np.arange(N)]
+  sumexp = np.sum(np.exp(scores),axis=0)
+  loss_i = -correct_class_scores + np.log(sumexp)
+  loss = np.sum(loss_i) / N
   loss += 0.5 * reg * np.sum(W*W)
 
-  dW = grad_helper.dot(X.T)
-  dW /= num_train
-  dW += reg * W
+  for i in xrange(N):
+    dW_i = np.exp(scores[:,i]) / sumexp[i]
+    dW_i[y[i]] -= 1
+    dW += np.outer(dW_i, X[:,i])
 
+  dW /= N
+  dW += reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -62,13 +60,29 @@ def softmax_loss_vectorized(W, X, y, reg):
   loss = 0.0
   dW = np.zeros_like(W)
 
+  C = W.shape[0]
+  N = X.shape[1]
+
   #############################################################################
   # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  scores = np.dot(W,X)
+  scores -= np.max(scores)
+  correct_class_scores = scores[y,np.arange(N)]
+  sumexp = np.sum(np.exp(scores),axis=0)
+  loss_i = -correct_class_scores + np.log(sumexp)
+  loss = np.sum(loss_i) / N
+  loss += 0.5 * reg * np.sum(W*W)
+
+  dW = np.exp(scores) / sumexp
+  dW[y, np.arange(N)] -= 1
+  dW = np.dot(dW,X.T)
+
+  dW /= N
+  dW += reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################

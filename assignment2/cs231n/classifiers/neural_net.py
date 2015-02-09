@@ -72,6 +72,8 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # unpack variables from the model dictionary
   W1,b1,W2,b2 = model['W1'], model['b1'], model['W2'], model['b2']
   N, D = X.shape
+  H = W1.shape[1]
+  C = W2.shape[1]
 
   # compute the forward pass
   scores = None
@@ -80,9 +82,11 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # Store the result in the scores variable, which should be an array of      #
   # shape (N, C).                                                             #
   #############################################################################
-  relu = lambda x: np.maximum(0,x)
-  H1 = relu(np.dot(X,W1) + b1)
-  scores = np.dot(H1,W2) + b2
+  
+  fc1 = np.dot(X,W1) + b1
+  relu = np.maximum(0,fc1)
+  scores = np.dot(relu,W2) + b2 #Same as fc2
+
   #############################################################################
   #                              END OF YOUR CODE                             #
   #############################################################################
@@ -100,23 +104,64 @@ def two_layer_net(X, model, y=None, reg=0.0):
   # classifier loss. So that your results match ours, multiply the            #
   # regularization loss by 0.5                                                #
   #############################################################################
-  correct_class_scores = scores[np.arange(N), y]
-  logsum = np.log(np.sum(np.exp(scores),axis=1))
-  loss_i = -correct_class_scores + logsum
-  loss = np.sum(loss_i) / N
-  loss += 0.5 * reg * (np.sum(W1*W1) + np.sum(W2*W2))
+
+  expsc = np.exp(scores)
+  sumsc = np.sum(expsc, axis=1)
+  logsc = np.log(sumsc)
+  softmax = -scores[np.arange(N), y] + logsc
+  loss = np.sum(softmax)/N + 0.5*reg*(np.sum(W1*W1) + np.sum(W2*W2))
+
   #############################################################################
   #                              END OF YOUR CODE                             #
   #############################################################################
 
   # compute the gradients
   grads = {}
-  #############################################################################
-  # TODO: Compute the backward pass, computing the derivatives of the weights #
-  # and biases. Store the results in the grads dictionary. For example,       #
-  # grads['W1'] should store the gradient on W1, and be a matrix of same size #
-  #############################################################################
-  pass
+
+  # #############################################################################
+  # # TODO: Compute the backward pass, computing the derivatives of the weights #
+  # # and biases. Store the results in the grads dictionary. For example,       #
+  # # grads['W1'] should store the gradient on W1, and be a matrix of same size #
+  # #############################################################################
+  
+  # Initialize stuffs to zero
+  dscores = np.zeros_like(scores)
+  dW1 = np.zeros_like(W1)
+  db1 = np.zeros_like(b1)
+  dW2 = np.zeros_like(W2)
+  db2 = np.zeros_like(b2)
+
+  # backprop loss
+  dsoftmax = np.ones(N)/N
+  dW1 += reg * W1
+  dW2 += reg * W2
+  # backprop softmax
+  dscores[np.arange(N), y] -= dsoftmax
+  dlogsc = dsoftmax
+  # backprop logsc
+  dsumsc = dlogsc / sumsc
+  # backprop sumsc
+  dexpsc = np.outer(dsumsc, np.ones(C))
+  # backprop expsc
+  dscores += np.exp(scores) * dexpsc
+  # backprop scores
+  drelu = np.dot(dscores, W2.T) #W2 * dscores 
+  dW2 += np.dot(relu.T, dscores) #relu * dscores
+  db2 += np.dot(dscores.T, np.ones(N)) #dscores
+  # backprop relu
+  ind_fc1 = np.zeros_like(fc1)
+  ind_fc1[fc1>0] = 1
+  dfc1 = ind_fc1 * drelu
+  # backprop fc1
+  dW1 += np.dot(X.T, dfc1) #X * dfc1
+  db1 += np.dot(dfc1.T, np.ones(N)) #dfc1
+
+  grads['W1'] = dW1
+  grads['b1'] = db1
+  grads['W2'] = dW2
+  grads['b2'] = db2
+
+
   #############################################################################
   #                              END OF YOUR CODE                             #
   #############################################################################

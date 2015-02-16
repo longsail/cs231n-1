@@ -71,46 +71,46 @@ def softmax_loss_vectorized(W, X, y, reg):
   #############################################################################
   
   # ## BACKPROP METHOD
-  # scores = np.dot(X.T, W.T)
-  # expsc = np.exp(scores)
-  # sumsc = np.sum(expsc, axis=1)
-  # logsc = np.log(sumsc)
-  # softmax = -scores[np.arange(N), y] + logsc
-  # loss = np.sum(softmax)/N + 0.5*reg*(np.sum(np.sum(W)))
+  scores = np.dot(X.T, W.T)
+  expsc = np.exp(scores)
+  sumsc = np.sum(expsc, axis=1)
+  logsc = np.log(sumsc)
+  softmax = -scores[np.arange(N), y] + logsc
+  loss = np.sum(softmax)/N + 0.5*reg*(np.sum(np.sum(W)))
 
-  # # Initialize dscores to zero
-  # dscores = np.zeros_like(scores)
+  # Initialize dscores to zero
+  dscores = np.zeros_like(scores)
 
-  # # backprop loss
-  # dsoftmax = np.ones(N)/N
-  # dW += reg * W
-  # # backprop softmax
-  # dscores[np.arange(N), y] -= dsoftmax
-  # dlogsc = dsoftmax
-  # # backprop logsc
-  # dsumsc = dlogsc / sumsc
-  # # backprop sumsc
-  # dexpsc = np.outer(dsumsc, np.ones(C))
-  # # backprop expsc
-  # dscores += np.exp(scores) * dexpsc
-  # # backprop scores
-  # dW += np.dot(dscores.T, X.T)
-
-
-  scores = np.dot(W,X)
-  scores -= np.max(scores)
-  correct_class_scores = scores[y,np.arange(N)]
-  sumexp = np.sum(np.exp(scores),axis=0)
-  loss_i = -correct_class_scores + np.log(sumexp)
-  loss = np.sum(loss_i) / N
-  loss += 0.5 * reg * np.sum(W*W)
-
-  dW = np.exp(scores) / sumexp
-  dW[y, np.arange(N)] -= 1
-  dW = np.dot(dW,X.T)
-
-  dW /= N
+  # backprop loss
+  dsoftmax = np.ones(N)/N
   dW += reg * W
+  # backprop softmax
+  dscores[np.arange(N), y] -= dsoftmax
+  dlogsc = dsoftmax
+  # backprop logsc
+  dsumsc = dlogsc / sumsc
+  # backprop sumsc
+  dexpsc = np.outer(dsumsc, np.ones(C))
+  # backprop expsc
+  dscores += np.exp(scores) * dexpsc
+  # backprop scores
+  dW += np.dot(dscores.T, X.T)
+
+
+  # scores = np.dot(W,X)
+  # scores -= np.max(scores)
+  # correct_class_scores = scores[y,np.arange(N)]
+  # sumexp = np.sum(np.exp(scores),axis=0)
+  # loss_i = -correct_class_scores + np.log(sumexp)
+  # loss = np.sum(loss_i) / N
+  # loss += 0.5 * reg * np.sum(W*W)
+
+  # dW = np.exp(scores) / sumexp
+  # dW[y, np.arange(N)] -= 1
+  # dW = np.dot(dW,X.T)
+
+  # dW /= N
+  # dW += reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################

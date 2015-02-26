@@ -4,7 +4,7 @@ from cs231n.layers import *
 from cs231n.fast_layers import *
 from cs231n.layer_utils import *
 
-def multi_layer_convnet(X, model, y=None, reg=0.0):
+# def multi_layer_convnet(X, model, y=None, reg=0.0):
 
   # # Unpack weights
   # W1, b1, W2, b2 = model['W1'], model['b1'], model['W2'], model['b2']

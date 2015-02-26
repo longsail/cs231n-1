@@ -16,7 +16,9 @@ def random_flips(X):
   #############################################################################
   # TODO: Implement the random_flips function. Store the result in out.       #
   #############################################################################
-  pass
+  idx = np.random.choice(X.shape[0], X.shape[0]/2)
+  out = X
+  out[idx,:,:,::-1] = X[idx,:,:,::-1]
   #############################################################################
   #                           END OF YOUR CODE                                #
   #############################################################################
@@ -43,7 +45,10 @@ def random_crops(X, crop_shape):
   #############################################################################
   # TODO: Implement the random_crops function. Store the result in out.       #
   #############################################################################
-  pass
+  tl_y = np.random.randint(H - HH, size=N)
+  tl_x = np.random.randint(W - WW, size=N)
+  for n in xrange(N):
+    out[n,:,:,:] = X[n,:, tl_y[n]:tl_y[n]+HH, tl_x[n]:tl_x[n]+WW]
   #############################################################################
   #                           END OF YOUR CODE                                #
   #############################################################################
@@ -73,7 +78,9 @@ def random_contrast(X, scale=(0.8, 1.2)):
   #############################################################################
   # TODO: Implement the random_contrast function. Store the result in out.    #
   #############################################################################
-  pass
+  scale_factors = np.random.uniform(low,high=high,size=N)
+  for n in xrange(N):
+    out[n,:,:,:] = X[n,:,:,:] * scale_factors[n]
   #############################################################################
   #                           END OF YOUR CODE                                #
   #############################################################################
@@ -103,7 +110,10 @@ def random_tint(X, scale=(-10, 10)):
   #############################################################################
   # TODO: Implement the random_tint function. Store the result in out.        #
   #############################################################################
-  pass
+  tint_factors = np.random.uniform(low,high=high,size=(N,3))
+  for n in xrange(N):
+    for c in xrange(C):
+      out[n,c,:,:] = X[n,c,:,:] + tint_factors[n,c]
   #############################################################################
   #                           END OF YOUR CODE                                #
   #############################################################################
